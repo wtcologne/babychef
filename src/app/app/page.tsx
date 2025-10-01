@@ -313,7 +313,7 @@ export default function Dashboard() {
           </div>
           <button 
             onClick={handleLogout}
-            className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white rounded-xl border border-gray-300 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 active:scale-95 shadow-sm hover:shadow transition-all duration-150 touch-manipulation select-none"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl border border-gray-300 hover:from-gray-200 hover:to-gray-300 active:from-gray-300 active:to-gray-400 active:scale-95 shadow-md hover:shadow-lg transition-all duration-150 touch-manipulation select-none"
           >
             Abmelden
           </button>
@@ -340,17 +340,19 @@ export default function Dashboard() {
             <div className="space-y-2">
               <label className="text-sm font-semibold text-black">Vorhandene Zutaten</label>
               
-              {/* Gemüse-Buttons */}
-              <div className="flex flex-wrap gap-2 mb-2">
-                {[
-                  { name: 'Kartoffel', emoji: '🥔' },
-                  { name: 'Möhre', emoji: '🥕' },
-                  { name: 'Zucchini', emoji: '🥒' },
-                  { name: 'Apfel', emoji: '🍎' },
-                  { name: 'Brokkoli', emoji: '🥦' },
-                  { name: 'Tomate', emoji: '🍅' },
-                  { name: 'Banane', emoji: '🍌' }
-                ].map((item) => (
+                  {/* Gemüse-Buttons */}
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {[
+                      { name: 'Kartoffel', emoji: '🥔' },
+                      { name: 'Möhre', emoji: '🥕' },
+                      { name: 'Zucchini', emoji: '🥒' },
+                      { name: 'Apfel', emoji: '🍎' },
+                      { name: 'Brokkoli', emoji: '🥦' },
+                      { name: 'Tomate', emoji: '🍅' },
+                      { name: 'Banane', emoji: '🍌' },
+                      { name: 'Milch', emoji: '🥛' },
+                      { name: 'Fleisch', emoji: '🥩' }
+                    ].map((item) => (
                   <button
                     key={item.name}
                     type="button"
