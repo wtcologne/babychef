@@ -11,6 +11,7 @@ export default function Dashboard() {
   const [available, setAvailable] = useState('');
   const [avoid, setAvoid] = useState('');
   const [out, setOut] = useState<{ error?: string; recipe?: { title: string; ingredients: Array<{name: string; qty: number | null; unit: string | null}>; steps: string[]; allergens?: string[]; notes?: string } } | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in
@@ -59,41 +60,44 @@ export default function Dashboard() {
   }
 
   async function genText() {
-    try {
-      console.log('Generating recipe...');
-      
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setOut({ error: 'Not logged in' });
-        return;
-      }
-      
-      const res = await fetch('/api/recipes/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ageRange,
-          available: available.split(',').map(s=>s.trim()).filter(Boolean),
-          avoid: avoid.split(',').map(s=>s.trim()).filter(Boolean),
-          userId: user.id
-        })
-      });
-      
-      const data = await res.json();
-      console.log('Recipe generation response:', data);
-      console.log('Response status:', res.status);
-      
-      if (!res.ok) {
-        console.error('API Error details:', data);
-        throw new Error(data.details || data.error || 'Failed to generate recipe');
-      }
-      
-      setOut(data);
+        try {
+          setIsGenerating(true);
+          console.log('Generating recipe...');
+          
+          // Get current user
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) {
+            setOut({ error: 'Not logged in' });
+            return;
+          }
+          
+          const res = await fetch('/api/recipes/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ageRange,
+              available: available.split(',').map(s=>s.trim()).filter(Boolean),
+              avoid: avoid.split(',').map(s=>s.trim()).filter(Boolean),
+              userId: user.id
+            })
+          });
+          
+          const data = await res.json();
+          console.log('Recipe generation response:', data);
+          console.log('Response status:', res.status);
+          
+          if (!res.ok) {
+            console.error('API Error details:', data);
+            throw new Error(data.details || data.error || 'Failed to generate recipe');
+          }
+          
+          setOut(data);
         } catch (error: unknown) {
           console.error('Recipe generation error:', error);
           const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
           setOut({ error: errorMessage });
+        } finally {
+          setIsGenerating(false);
         }
   }
 
@@ -145,7 +149,8 @@ export default function Dashboard() {
                   { name: 'Zucchini', emoji: '🥒' },
                   { name: 'Apfel', emoji: '🍎' },
                   { name: 'Brokkoli', emoji: '🥦' },
-                  { name: 'Tomate', emoji: '🍅' }
+                  { name: 'Tomate', emoji: '🍅' },
+                  { name: 'Banane', emoji: '🍌' }
                 ].map((item) => (
                   <button
                     key={item.name}
@@ -196,10 +201,11 @@ export default function Dashboard() {
           
           <div className="flex flex-col sm:flex-row gap-4">
             <button 
-              onClick={genText} 
-              className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 active:scale-95 transition-all duration-150 touch-manipulation select-none"
+              onClick={genText}
+              disabled={isGenerating}
+              className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 active:scale-95 transition-all duration-150 touch-manipulation select-none disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              🍲 Rezept generieren
+              {isGenerating ? '⏳ Lädt...' : '🍲 Rezept generieren'}
             </button>
             
           </div>

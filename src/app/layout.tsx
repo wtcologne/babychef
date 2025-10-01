@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: 'BabyChef', description: 'Rezepte fü
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de">
-      <body className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-800 font-sans">{children}</body>
+      <body className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 font-sans">{children}</body>
     </html>
   );
 }
