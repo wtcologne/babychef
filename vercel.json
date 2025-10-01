@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "functions": {
+    "app/api/stripe/webhook/route.ts": {
+      "maxDuration": 10,
+      "memory": 1024
+    }
+  }
+}
