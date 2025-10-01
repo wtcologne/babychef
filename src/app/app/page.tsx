@@ -63,6 +63,64 @@ export default function Dashboard() {
     router.push('/');
   }
 
+  // Compress image to reduce storage size
+  async function compressImage(file: File): Promise<File> {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          
+          // Max dimensions
+          const MAX_WIDTH = 1024;
+          const MAX_HEIGHT = 1024;
+          
+          let width = img.width;
+          let height = img.height;
+          
+          // Calculate new dimensions
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height = (height * MAX_WIDTH) / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width = (width * MAX_HEIGHT) / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // Convert to blob with compression (0.7 quality)
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now()
+                });
+                resolve(compressedFile);
+              } else {
+                resolve(file);
+              }
+            },
+            'image/jpeg',
+            0.7
+          );
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function genText() {
         try {
           setIsGenerating(true);
@@ -103,6 +161,20 @@ export default function Dashboard() {
               setOut({ recipe: data.proposals[0] });
             } else {
               setOut({ error: 'Keine Rezepte gefunden' });
+            }
+            
+            // Schedule photo deletion after 1 hour
+            if (uploadedPhotoPath) {
+              setTimeout(async () => {
+                try {
+                  await supabase.storage
+                    .from('fridge-photos')
+                    .remove([uploadedPhotoPath]);
+                  console.log('Photo automatically deleted after 1 hour');
+                } catch (error) {
+                  console.error('Failed to auto-delete photo:', error);
+                }
+              }, 60 * 60 * 1000); // 1 hour in milliseconds
             }
           } else {
             // Use text-based generation
@@ -156,10 +228,13 @@ export default function Dashboard() {
           return;
         }
         
+        // Compress image before upload
+        const compressedFile = await compressImage(file);
+        
         // Show preview
         const reader = new FileReader();
         reader.onload = (e) => setPhotoPreview(e.target?.result as string);
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(compressedFile);
         
         // Get current user
         const { data: { user } } = await supabase.auth.getUser();
@@ -173,7 +248,7 @@ export default function Dashboard() {
         const fileName = `${user.id}/${Date.now()}.jpg`;
         const { error: uploadError } = await supabase.storage
           .from('fridge-photos')
-          .upload(fileName, file);
+          .upload(fileName, compressedFile);
         
         if (uploadError) {
           console.error('Upload error:', uploadError);
