@@ -328,12 +328,13 @@ export default function Dashboard() {
                   <div>
                     <strong className="font-semibold">Foto hochgeladen!</strong>
                     <p className="text-sm mt-1">
-                      Klicke auf "Rezept generieren" um ein Rezept aus dem Foto zu erstellen. 
+                      Klicke auf &quot;Rezept generieren&quot; um ein Rezept aus dem Foto zu erstellen. 
                       Du kannst auch noch Allergene angeben.
                     </p>
                   </div>
                 </div>
               </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src={photoPreview} 
                 alt="Vorschau" 
