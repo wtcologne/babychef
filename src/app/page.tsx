@@ -4,9 +4,12 @@ export default function Home() {
   return (
     <main className="max-w-4xl mx-auto p-8 space-y-8">
       <div className="text-center space-y-6">
-        <h1 className="text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          BabyChef 👶🍲
-        </h1>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img 
+          src="/logo.png" 
+          alt="BabyChef Logo" 
+          className="w-32 h-32 rounded-full mx-auto shadow-2xl object-cover border-4 border-white"
+        />
         <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
           AI-Rezepte für Babys & Kleinkinder. Einfach. Sicher. Allergen-Hinweise inklusive.
         </p>

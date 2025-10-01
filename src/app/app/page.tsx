@@ -311,10 +311,7 @@ export default function Dashboard() {
               className="w-16 h-16 rounded-full shadow-lg object-cover border-4 border-white"
             />
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                BabyChef
-              </h1>
-              <p className="text-gray-600 mt-1 text-sm">Erstelle personalisierte Rezepte für dein Baby</p>
+              <p className="text-gray-600 text-sm">Erstelle personalisierte Rezepte für dein Baby</p>
             </div>
           </div>
           <button 
