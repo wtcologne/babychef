@@ -50,8 +50,16 @@ export async function POST(req: NextRequest) {
     console.log('OpenAI Vision response:', raw);
     
     let parsed: unknown;
-    try { 
-      parsed = JSON.parse(raw); 
+    try {
+      // Remove markdown code blocks if present
+      let cleanJson = raw.trim();
+      if (cleanJson.startsWith('```json')) {
+        cleanJson = cleanJson.replace(/^```json\n/, '').replace(/\n```$/, '');
+      } else if (cleanJson.startsWith('```')) {
+        cleanJson = cleanJson.replace(/^```\n/, '').replace(/\n```$/, '');
+      }
+      
+      parsed = JSON.parse(cleanJson); 
     } catch (parseError) { 
       console.error('JSON parse error:', parseError);
       return NextResponse.json({ error: 'parse_error', raw }, { status: 422 }); 
