@@ -14,6 +14,8 @@ export default function Dashboard() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState<string | null>(null);
+  const [uploadedPhotoPath, setUploadedPhotoPath] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if user is logged in
@@ -64,6 +66,7 @@ export default function Dashboard() {
   async function genText() {
         try {
           setIsGenerating(true);
+          setOut(null);
           console.log('Generating recipe...');
           
           // Get current user
@@ -73,27 +76,59 @@ export default function Dashboard() {
             return;
           }
           
-          const res = await fetch('/api/recipes/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              ageRange,
-              available: available.split(',').map(s=>s.trim()).filter(Boolean),
-              avoid: avoid.split(',').map(s=>s.trim()).filter(Boolean),
-              userId: user.id
-            })
-          });
-          
-          const data = await res.json();
-          console.log('Recipe generation response:', data);
-          console.log('Response status:', res.status);
-          
-          if (!res.ok) {
-            console.error('API Error details:', data);
-            throw new Error(data.details || data.error || 'Failed to generate recipe');
+          // Check if we have a photo uploaded - use vision API
+          if (uploadedPhotoUrl && uploadedPhotoPath) {
+            console.log('Using photo for recipe generation:', uploadedPhotoUrl);
+            
+            const res = await fetch('/api/recipes/from-photo', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ageRange,
+                imagePublicUrl: uploadedPhotoUrl,
+                storagePath: uploadedPhotoPath
+              })
+            });
+            
+            const data = await res.json();
+            console.log('Vision API response:', data);
+            
+            if (!res.ok) {
+              throw new Error(data.error || 'Foto-Analyse fehlgeschlagen');
+            }
+            
+            // Show first recipe proposal
+            if (data.proposals && data.proposals.length > 0) {
+              setOut({ recipe: data.proposals[0] });
+            } else {
+              setOut({ error: 'Keine Rezepte gefunden' });
+            }
+          } else {
+            // Use text-based generation
+            console.log('Using text-based recipe generation');
+            
+            const res = await fetch('/api/recipes/generate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ageRange,
+                available: available.split(',').map(s=>s.trim()).filter(Boolean),
+                avoid: avoid.split(',').map(s=>s.trim()).filter(Boolean),
+                userId: user.id
+              })
+            });
+            
+            const data = await res.json();
+            console.log('Recipe generation response:', data);
+            console.log('Response status:', res.status);
+            
+            if (!res.ok) {
+              console.error('API Error details:', data);
+              throw new Error(data.details || data.error || 'Failed to generate recipe');
+            }
+            
+            setOut(data);
           }
-          
-          setOut(data);
         } catch (error: unknown) {
           console.error('Recipe generation error:', error);
           const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -106,7 +141,6 @@ export default function Dashboard() {
   async function handlePhotoCapture() {
     try {
       setIsUploadingPhoto(true);
-      setOut(null);
       
       // Create file input for camera
       const input = document.createElement('input');
@@ -116,7 +150,10 @@ export default function Dashboard() {
       
       input.onchange = async (e) => {
         const file = (e.target as HTMLInputElement).files?.[0];
-        if (!file) return;
+        if (!file) {
+          setIsUploadingPhoto(false);
+          return;
+        }
         
         // Show preview
         const reader = new FileReader();
@@ -133,7 +170,7 @@ export default function Dashboard() {
         
         // Upload to Supabase Storage
         const fileName = `${user.id}/${Date.now()}.jpg`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('fridge-photos')
           .upload(fileName, file);
         
@@ -149,35 +186,12 @@ export default function Dashboard() {
           .from('fridge-photos')
           .getPublicUrl(fileName);
         
-        console.log('Photo uploaded:', publicUrl);
+        console.log('Photo uploaded successfully:', publicUrl);
         
-        // Call vision API
-        setIsGenerating(true);
-        const res = await fetch('/api/recipes/from-photo', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ageRange,
-            imagePublicUrl: publicUrl,
-            storagePath: fileName
-          })
-        });
+        // Store URL and path for later use
+        setUploadedPhotoUrl(publicUrl);
+        setUploadedPhotoPath(fileName);
         
-        const data = await res.json();
-        console.log('Vision API response:', data);
-        
-        if (!res.ok) {
-          throw new Error(data.error || 'Foto-Analyse fehlgeschlagen');
-        }
-        
-        // Show first recipe proposal
-        if (data.proposals && data.proposals.length > 0) {
-          setOut({ recipe: data.proposals[0] });
-        } else {
-          setOut({ error: 'Keine Rezepte gefunden' });
-        }
-        
-        setIsGenerating(false);
         setIsUploadingPhoto(false);
       };
       
@@ -187,7 +201,6 @@ export default function Dashboard() {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       setOut({ error: errorMessage });
       setIsUploadingPhoto(false);
-      setIsGenerating(false);
     }
   }
 
@@ -308,13 +321,34 @@ export default function Dashboard() {
           </div>
           
           {photoPreview && (
-            <div className="mt-4">
-              <p className="text-sm font-semibold text-black mb-2">Hochgeladenes Foto:</p>
+            <div className="mt-4 space-y-3">
+              <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
+                <div className="flex items-center space-x-2 text-green-700">
+                  <span className="text-2xl">✅</span>
+                  <div>
+                    <strong className="font-semibold">Foto hochgeladen!</strong>
+                    <p className="text-sm mt-1">
+                      Klicke auf "Rezept generieren" um ein Rezept aus dem Foto zu erstellen. 
+                      Du kannst auch noch Allergene angeben.
+                    </p>
+                  </div>
+                </div>
+              </div>
               <img 
                 src={photoPreview} 
                 alt="Vorschau" 
-                className="w-full max-w-md rounded-2xl shadow-lg border-2 border-gray-200"
+                className="w-full max-w-md rounded-2xl shadow-lg border-2 border-gray-200 mx-auto"
               />
+              <button
+                onClick={() => {
+                  setPhotoPreview(null);
+                  setUploadedPhotoUrl(null);
+                  setUploadedPhotoPath(null);
+                }}
+                className="px-4 py-2 text-sm text-red-600 hover:text-red-700 bg-red-50 rounded-xl border border-red-200 hover:bg-red-100 active:bg-red-200 transition-all duration-150 touch-manipulation select-none"
+              >
+                🗑️ Foto entfernen
+              </button>
             </div>
           )}
         </div>
