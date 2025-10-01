@@ -1,10 +1,10 @@
 import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
-type Cookie = {
+type ServerCookie = {
   name: string;
   value: string;
-  options?: Parameters<ReturnType<typeof cookies>['set']>[0];
+  options: CookieOptions;
 };
 
 export const supabaseServer = () => {
@@ -14,12 +14,14 @@ export const supabaseServer = () => {
     {
       cookies: {
         getAll() {
-          return cookies().getAll() as unknown as Cookie[];
+          return cookies()
+            .getAll()
+            .map(({ name, value }) => ({ name, value, options: {} as CookieOptions })) as ServerCookie[];
         },
         setAll(cookiesToSet) {
           const cookieStore = cookies();
           cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set({ name, value, ...options });
+            cookieStore.set({ name, value, ...(options ?? {}) });
           });
         }
       }
@@ -35,7 +37,7 @@ export const supabaseAdmin = () => {
     {
       cookies: {
         getAll() {
-          return [] as Cookie[];
+          return [] as ServerCookie[];
         },
         setAll() {
           // no-op for service role client
