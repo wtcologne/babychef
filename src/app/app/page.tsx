@@ -11,7 +11,7 @@ export default function Dashboard() {
   const [available, setAvailable] = useState('');
   const [avoid, setAvoid] = useState('');
   const [image, setImage] = useState<File|null>(null);
-  const [out, setOut] = useState<any>(null);
+  const [out, setOut] = useState<unknown>(null);
 
   useEffect(() => {
     // Check if user is logged in
@@ -91,26 +91,13 @@ export default function Dashboard() {
       }
       
       setOut(data);
-    } catch (error: any) {
-      console.error('Recipe generation error:', error);
-      console.error('Error stack:', error.stack);
-      setOut({ error: error.message || 'Unknown error occurred' });
-    }
+        } catch (error: unknown) {
+          console.error('Recipe generation error:', error);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+          setOut({ error: errorMessage });
+        }
   }
 
-  async function genFromPhoto() {
-    if (!image) return;
-    const filePath = `user/${Date.now()}_${image.name}`;
-    const { data, error } = await supabase.storage.from('fridge-photos').upload(filePath, image);
-    if (error) { alert(error.message); return; }
-    const { data: urlData } = await supabase.storage.from('fridge-photos').createSignedUrl(filePath, 60 * 5);
-    const res = await fetch('/api/recipes/from-photo', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ageRange, imagePublicUrl: urlData!.signedUrl, storagePath: data!.path })
-    });
-    setOut(await res.json());
-  }
 
   return (
     <main className="p-6 max-w-4xl mx-auto space-y-8">
@@ -236,20 +223,20 @@ export default function Dashboard() {
       </div>
       {out && (
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
-          {out.error ? (
+          {(out as { error?: string }).error ? (
             <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
               <div className="flex items-center space-x-2 text-red-700">
                 <span className="text-2xl">⚠️</span>
                 <div>
                   <strong className="font-semibold">Fehler:</strong>
-                  <p className="text-sm mt-1">{out.error}</p>
+                  <p className="text-sm mt-1">{(out as { error: string }).error}</p>
                 </div>
               </div>
             </div>
-          ) : out.recipe ? (
+          ) : (out as { recipe?: unknown }).recipe ? (
             <div className="space-y-6">
               <div className="text-center space-y-2">
-                <h3 className="text-2xl font-bold text-gray-900">{out.recipe.title}</h3>
+                <h3 className="text-2xl font-bold text-gray-900">{(out as { recipe: { title: string } }).recipe.title}</h3>
                 <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto"></div>
               </div>
               
@@ -260,7 +247,7 @@ export default function Dashboard() {
                       <span className="mr-2">🥕</span> Zutaten
                     </h4>
                     <ul className="space-y-2">
-                      {out.recipe.ingredients.map((ing: any, i: number) => (
+                      {((out as { recipe: { ingredients: Array<{name: string; qty: number | null; unit: string | null}> } }).recipe.ingredients || []).map((ing, i: number) => (
                         <li key={i} className="flex items-center text-gray-700">
                           <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                           <span>
@@ -271,12 +258,12 @@ export default function Dashboard() {
                     </ul>
                   </div>
                   
-                  {out.recipe.allergens && out.recipe.allergens.length > 0 && (
+                  {((out as { recipe: { allergens?: string[] } }).recipe.allergens || []).length > 0 && (
                     <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4">
                       <h4 className="font-semibold text-orange-800 text-sm mb-2 flex items-center">
                         <span className="mr-2">⚠️</span> Allergene
                       </h4>
-                      <p className="text-sm text-orange-700">{out.recipe.allergens.join(', ')}</p>
+                      <p className="text-sm text-orange-700">{((out as { recipe: { allergens: string[] } }).recipe.allergens || []).join(', ')}</p>
                     </div>
                   )}
                 </div>
@@ -287,7 +274,7 @@ export default function Dashboard() {
                       <span className="mr-2">👨‍🍳</span> Zubereitung
                     </h4>
                     <ol className="space-y-3">
-                      {out.recipe.steps.map((step: string, i: number) => (
+                      {((out as { recipe: { steps: string[] } }).recipe.steps || []).map((step: string, i: number) => (
                         <li key={i} className="flex items-start text-gray-700">
                           <span className="bg-green-500 text-white text-sm font-bold rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
                             {i + 1}
@@ -298,12 +285,12 @@ export default function Dashboard() {
                     </ol>
                   </div>
                   
-                  {out.recipe.notes && (
+                  {(out as { recipe: { notes?: string } }).recipe.notes && (
                     <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4">
                       <h4 className="font-semibold text-purple-800 text-sm mb-2 flex items-center">
                         <span className="mr-2">💡</span> Hinweise
                       </h4>
-                      <p className="text-sm text-purple-700">{out.recipe.notes}</p>
+                      <p className="text-sm text-purple-700">{(out as { recipe: { notes: string } }).recipe.notes}</p>
                     </div>
                   )}
                 </div>

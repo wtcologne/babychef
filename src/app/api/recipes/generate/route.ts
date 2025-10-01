@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
     const prompt = TEXT_RECIPE_PROMPT({ ageRange, available, avoid });
     
-    let parsed: any;
+        let parsed: unknown;
     try {
       const completion = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo', // Use cheaper model to avoid rate limits
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
       const raw = completion.choices[0]?.message?.content ?? '{}';
       parsed = JSON.parse(raw);
-    } catch (openaiError: any) {
+        } catch (openaiError: unknown) {
       console.error('OpenAI Error:', openaiError);
       
       // Fallback: Create a simple recipe without AI
@@ -60,14 +60,22 @@ export async function POST(req: NextRequest) {
     // Use admin client to insert data (bypasses RLS)
     const supabase = supabaseAdmin();
     
+    const parsedData = parsed as {
+      title: string;
+      ingredients: Array<{name: string; qty: number | null; unit: string | null}>;
+      steps: string[];
+      allergens: string[];
+      notes: string;
+    };
+    
     const { data, error } = await supabase.from('recipes').insert({
       user_id: userId,
-      title: parsed.title,
+      title: parsedData.title,
       age_range: ageRange,
-      ingredients: parsed.ingredients,
-      steps: parsed.steps,
-      allergens: parsed.allergens,
-      notes: parsed.notes
+      ingredients: parsedData.ingredients,
+      steps: parsedData.steps,
+      allergens: parsedData.allergens,
+      notes: parsedData.notes
     }).select().single();
 
     if (error) {
