@@ -9,12 +9,12 @@ export async function middleware(req: Request) {
 
   if (!protect) return NextResponse.next();
 
-  // Create a response object to handle cookies properly
-  let response = NextResponse.next({
-    request: {
-      headers: req.headers,
-    },
-  });
+      // Create a response object to handle cookies properly
+      const response = NextResponse.next({
+        request: {
+          headers: req.headers,
+        },
+      });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,20 +26,20 @@ export async function middleware(req: Request) {
           console.log(`Cookie ${name}:`, cookieValue);
           return cookieValue;
         },
-        set: (name: string, value: string, options: any) => {
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          });
-        },
-        remove: (name: string, options: any) => {
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
-          });
-        },
+            set: (name: string, value: string, options: Record<string, unknown>) => {
+              response.cookies.set({
+                name,
+                value,
+                ...options,
+              });
+            },
+            remove: (name: string, options: Record<string, unknown>) => {
+              response.cookies.set({
+                name,
+                value: '',
+                ...options,
+              });
+            },
       },
     }
   );

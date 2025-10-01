@@ -10,7 +10,6 @@ export default function Dashboard() {
   const [ageRange, setAgeRange] = useState<'6-8'|'9-12'|'12-24'|'1-2'|'3-4'|'5+'>('9-12');
   const [available, setAvailable] = useState('');
   const [avoid, setAvoid] = useState('');
-  const [image, setImage] = useState<File|null>(null);
   const [out, setOut] = useState<unknown>(null);
 
   useEffect(() => {
@@ -123,7 +122,7 @@ export default function Dashboard() {
               <label className="text-sm font-semibold text-black">Altersgruppe</label>
               <select 
                 value={ageRange} 
-                onChange={e=>setAgeRange(e.target.value as any)} 
+                onChange={e=>setAgeRange(e.target.value as '6-8'|'9-12'|'12-24'|'1-2'|'3-4'|'5+')} 
                 className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-white/50 text-black"
               >
                 <option value="6-8">6–8 Monate</option>
@@ -203,21 +202,6 @@ export default function Dashboard() {
               🍲 Rezept generieren
             </button>
             
-            <div className="flex gap-2">
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={e=>setImage(e.target.files?.[0]??null)}
-                className="hidden"
-                id="photo-upload"
-              />
-              <label 
-                htmlFor="photo-upload"
-                className="px-4 py-3 rounded-2xl bg-white text-gray-700 font-semibold shadow-lg hover:shadow-xl border border-gray-200 hover:bg-gray-50 transform hover:scale-105 transition-all duration-200 cursor-pointer"
-              >
-                📸 Foto
-              </label>
-            </div>
           </div>
         </div>
       </div>

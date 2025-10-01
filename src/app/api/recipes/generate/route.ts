@@ -85,8 +85,9 @@ export async function POST(req: NextRequest) {
     
     console.log('Recipe created successfully:', data);
     return NextResponse.json({ recipe: data });
-  } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: 'internal_error', details: error.message }, { status: 500 });
-  }
+      } catch (error: unknown) {
+        console.error('API Error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ error: 'internal_error', details: errorMessage }, { status: 500 });
+      }
 }

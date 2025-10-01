@@ -57,10 +57,11 @@ export default function Login() {
           setMessage('Erfolgreich angemeldet! Falls die Weiterleitung nicht funktioniert, klicke hier: → App öffnen');
         }, 3000);
       }
-    } catch (error: any) {
-      console.error('Auth error:', error);
-      setMessage(error.message);
-    } finally {
+        } catch (error: unknown) {
+          console.error('Auth error:', error);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+          setMessage(errorMessage);
+        } finally {
       setLoading(false);
     }
   }
