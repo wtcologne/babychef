@@ -10,7 +10,8 @@ export default function Dashboard() {
   const [ageRange, setAgeRange] = useState<'6-8'|'9-12'|'12-24'|'1-2'|'3-4'|'5+'>('9-12');
   const [available, setAvailable] = useState('');
   const [avoid, setAvoid] = useState('');
-  const [out, setOut] = useState<{ error?: string; recipe?: { title: string; ingredients: Array<{name: string; qty: number | null; unit: string | null}>; steps: string[]; allergens?: string[]; notes?: string } } | null>(null);
+  const [out, setOut] = useState<{ error?: string; recipes?: Array<{ title: string; ingredients: Array<{name: string; qty: number | null; unit: string | null}>; steps: string[]; allergens?: string[]; notes?: string }> } | null>(null);
+  const [currentRecipeIndex, setCurrentRecipeIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -156,9 +157,10 @@ export default function Dashboard() {
               throw new Error(data.error || 'Foto-Analyse fehlgeschlagen');
             }
             
-            // Show first recipe proposal
+            // Show all recipe proposals (up to 3)
             if (data.proposals && data.proposals.length > 0) {
-              setOut({ recipe: data.proposals[0] });
+              setOut({ recipes: data.proposals });
+              setCurrentRecipeIndex(0);
             } else {
               setOut({ error: 'Keine Rezepte gefunden' });
             }
@@ -177,30 +179,46 @@ export default function Dashboard() {
               }, 60 * 60 * 1000); // 1 hour in milliseconds
             }
           } else {
-            // Use text-based generation
+            // Use text-based generation - generate 3 recipes
             console.log('Using text-based recipe generation');
             
-            const res = await fetch('/api/recipes/generate', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                ageRange,
-                available: available.split(',').map(s=>s.trim()).filter(Boolean),
-                avoid: avoid.split(',').map(s=>s.trim()).filter(Boolean),
-                userId: user.id
-              })
-            });
-            
-            const data = await res.json();
-            console.log('Recipe generation response:', data);
-            console.log('Response status:', res.status);
-            
-            if (!res.ok) {
-              console.error('API Error details:', data);
-              throw new Error(data.details || data.error || 'Failed to generate recipe');
+            const recipes = [];
+            for (let i = 0; i < 3; i++) {
+              const res = await fetch('/api/recipes/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  ageRange,
+                  available: available.split(',').map(s=>s.trim()).filter(Boolean),
+                  avoid: avoid.split(',').map(s=>s.trim()).filter(Boolean),
+                  userId: user.id
+                })
+              });
+              
+              const data = await res.json();
+              console.log(`Recipe ${i + 1} generation response:`, data);
+              
+              if (!res.ok) {
+                console.error('API Error details:', data);
+                if (i === 0) {
+                  // If first recipe fails, throw error
+                  throw new Error(data.details || data.error || 'Failed to generate recipe');
+                }
+                // If subsequent recipes fail, just skip them
+                break;
+              }
+              
+              if (data.recipe) {
+                recipes.push(data.recipe);
+              }
             }
             
-            setOut(data);
+            if (recipes.length > 0) {
+              setOut({ recipes });
+              setCurrentRecipeIndex(0);
+            } else {
+              setOut({ error: 'Keine Rezepte generiert' });
+            }
           }
         } catch (error: unknown) {
           console.error('Recipe generation error:', error);
@@ -442,10 +460,56 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-          ) : out.recipe ? (
+          ) : out.recipes && out.recipes.length > 0 ? (
+            <div className="space-y-4">
+              {/* Carousel Navigation */}
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => setCurrentRecipeIndex(Math.max(0, currentRecipeIndex - 1))}
+                  disabled={currentRecipeIndex === 0}
+                  className="p-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white disabled:opacity-30 disabled:cursor-not-allowed hover:shadow-lg transform hover:scale-110 active:scale-95 transition-all duration-150 touch-manipulation select-none"
+                  aria-label="Vorheriges Rezept"
+                >
+                  ←
+                </button>
+                
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">
+                    Rezept {currentRecipeIndex + 1} von {out.recipes.length}
+                  </p>
+                  <div className="flex gap-2 mt-2 justify-center">
+                    {out.recipes.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentRecipeIndex(idx)}
+                        className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                          idx === currentRecipeIndex 
+                            ? 'bg-blue-500 w-6' 
+                            : 'bg-gray-300 hover:bg-gray-400'
+                        }`}
+                        aria-label={`Zu Rezept ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => setCurrentRecipeIndex(Math.min(out.recipes!.length - 1, currentRecipeIndex + 1))}
+                  disabled={currentRecipeIndex === out.recipes.length - 1}
+                  className="p-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white disabled:opacity-30 disabled:cursor-not-allowed hover:shadow-lg transform hover:scale-110 active:scale-95 transition-all duration-150 touch-manipulation select-none"
+                  aria-label="Nächstes Rezept"
+                >
+                  →
+                </button>
+              </div>
+
+              {/* Current Recipe */}
+              {(() => {
+                const recipe = out.recipes[currentRecipeIndex];
+                return (
             <div className="space-y-6">
               <div className="text-center space-y-2">
-                <h3 className="text-2xl font-bold text-gray-900">{out.recipe.title}</h3>
+                <h3 className="text-2xl font-bold text-gray-900">{recipe.title}</h3>
                 <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto"></div>
               </div>
               
@@ -456,7 +520,7 @@ export default function Dashboard() {
                       <span className="mr-2">🥕</span> Zutaten
                     </h4>
                     <ul className="space-y-2">
-                      {(out.recipe.ingredients || []).map((ing, i: number) => (
+                      {(recipe.ingredients || []).map((ing, i: number) => (
                         <li key={i} className="flex items-center text-gray-700">
                           <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                           <span>
@@ -467,12 +531,12 @@ export default function Dashboard() {
                     </ul>
                   </div>
                   
-                  {(out.recipe.allergens || []).length > 0 && (
+                  {(recipe.allergens || []).length > 0 && (
                     <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4">
                       <h4 className="font-semibold text-orange-800 text-sm mb-2 flex items-center">
                         <span className="mr-2">⚠️</span> Allergene
                       </h4>
-                      <p className="text-sm text-orange-700">{(out.recipe.allergens || []).join(', ')}</p>
+                      <p className="text-sm text-orange-700">{(recipe.allergens || []).join(', ')}</p>
                     </div>
                   )}
                 </div>
@@ -483,7 +547,7 @@ export default function Dashboard() {
                       <span className="mr-2">👨‍🍳</span> Zubereitung
                     </h4>
                     <ol className="space-y-3">
-                      {(out.recipe.steps || []).map((step: string, i: number) => (
+                      {(recipe.steps || []).map((step: string, i: number) => (
                         <li key={i} className="flex items-start text-gray-700">
                           <span className="bg-green-500 text-white text-sm font-bold rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
                             {i + 1}
@@ -494,16 +558,19 @@ export default function Dashboard() {
                     </ol>
                   </div>
                   
-                  {out.recipe.notes && (
+                  {recipe.notes && (
                     <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4">
                       <h4 className="font-semibold text-purple-800 text-sm mb-2 flex items-center">
                         <span className="mr-2">💡</span> Hinweise
                       </h4>
-                      <p className="text-sm text-purple-700">{out.recipe.notes}</p>
+                      <p className="text-sm text-purple-700">{recipe.notes}</p>
                     </div>
                   )}
                 </div>
               </div>
+            </div>
+                );
+              })()}
             </div>
           ) : (
             <div className="bg-gray-50 rounded-2xl p-6">
