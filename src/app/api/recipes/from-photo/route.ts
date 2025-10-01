@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabase-server';
+import { supabaseAdmin } from '@/lib/supabase-server';
 import { openai } from '@/lib/openai';
 import { VISION_PROMPT } from '@/lib/prompts';
 
@@ -13,7 +13,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'user_id_required' }, { status: 400 });
     }
 
-    const supabase = await supabaseServer();
+    // Use admin client to create signed URL (bypasses RLS)
+    const supabase = supabaseAdmin();
 
     // Get a signed URL that works for OpenAI
     const { data: signedUrlData, error: signedUrlError } = await supabase.storage
@@ -22,7 +23,10 @@ export async function POST(req: NextRequest) {
 
     if (signedUrlError || !signedUrlData) {
       console.error('Failed to create signed URL:', signedUrlError);
-      return NextResponse.json({ error: 'Failed to access image' }, { status: 500 });
+      return NextResponse.json({ 
+        error: 'Failed to access image', 
+        details: signedUrlError?.message || 'Unknown error' 
+      }, { status: 500 });
     }
 
     console.log('Using signed URL for OpenAI:', signedUrlData.signedUrl);
