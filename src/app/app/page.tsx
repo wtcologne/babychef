@@ -86,7 +86,8 @@ export default function Dashboard() {
               body: JSON.stringify({
                 ageRange,
                 imagePublicUrl: uploadedPhotoUrl,
-                storagePath: uploadedPhotoPath
+                storagePath: uploadedPhotoPath,
+                userId: user.id
               })
             });
             

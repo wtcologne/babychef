@@ -5,13 +5,15 @@ import { VISION_PROMPT } from '@/lib/prompts';
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await supabaseServer();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-
-    const { ageRange, imagePublicUrl, storagePath } = await req.json();
+    const { ageRange, imagePublicUrl, storagePath, userId } = await req.json();
     
-    console.log('Vision API: Processing photo', { ageRange, imagePublicUrl, storagePath });
+    console.log('Vision API: Processing photo', { ageRange, imagePublicUrl, storagePath, userId });
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'user_id_required' }, { status: 400 });
+    }
+
+    const supabase = await supabaseServer();
 
     // Get a signed URL that works for OpenAI
     const { data: signedUrlData, error: signedUrlError } = await supabase.storage
@@ -56,7 +58,7 @@ export async function POST(req: NextRequest) {
     console.log('Parsed data:', parsedData);
     
     await supabase.from('fridge_photos').insert({
-      user_id: user.id,
+      user_id: userId,
       storage_path: storagePath,
       detected_items: parsedData.detected_items
     });
