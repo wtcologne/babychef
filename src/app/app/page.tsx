@@ -108,13 +108,13 @@ export default function Dashboard() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Dein BabyChef
+              BabyChef
             </h1>
             <p className="text-gray-600 mt-2">Erstelle personalisierte Rezepte für dein Baby</p>
           </div>
           <button 
             onClick={handleLogout}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 bg-white/50 rounded-2xl border border-gray-200 hover:bg-gray-50 active:bg-gray-100 active:scale-95 transition-all duration-150 touch-manipulation select-none"
+            className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white rounded-2xl border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 active:scale-95 shadow-sm hover:shadow transition-all duration-150 touch-manipulation select-none"
           >
             Abmelden
           </button>
