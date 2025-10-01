@@ -101,7 +101,7 @@ export default function Login() {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transform hover:scale-105 transition-all duration-200"
+            className="w-full py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transform hover:scale-105 active:scale-95 transition-all duration-150 touch-manipulation select-none"
           >
             {loading ? 'Lädt...' : (isSignUp ? 'Account erstellen' : 'Anmelden')}
           </button>
@@ -121,11 +121,11 @@ export default function Login() {
         <div className="space-y-3 mt-6">
           <button 
             onClick={() => setIsSignUp(!isSignUp)}
-            className="w-full text-sm text-blue-600 hover:text-blue-700 font-medium py-2 rounded-xl hover:bg-blue-50 transition-colors"
+            className="w-full text-sm text-blue-600 hover:text-blue-700 font-medium py-2 rounded-xl hover:bg-blue-50 active:bg-blue-100 transition-all duration-150 touch-manipulation select-none"
           >
             {isSignUp ? 'Bereits einen Account? Anmelden' : 'Noch keinen Account? Registrieren'}
           </button>
-          <Link href="/" className="block text-sm text-gray-500 hover:text-gray-700 text-center py-2 rounded-xl hover:bg-gray-50 transition-colors">
+          <Link href="/" className="block text-sm text-gray-500 hover:text-gray-700 text-center py-2 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-all duration-150 touch-manipulation select-none">
             ← Zurück zur Startseite
           </Link>
         </div>

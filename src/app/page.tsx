@@ -15,13 +15,13 @@ export default function Home() {
       <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
         <Link 
           href="/login" 
-          className="px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold text-lg shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-200"
+          className="px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold text-lg shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 active:scale-95 transition-all duration-150 touch-manipulation select-none"
         >
           Loslegen
         </Link>
         <Link 
           href="/premium" 
-          className="px-8 py-4 rounded-2xl bg-white text-gray-700 font-semibold text-lg shadow-lg hover:shadow-xl border border-gray-200 hover:bg-gray-50 transform hover:scale-105 transition-all duration-200"
+          className="px-8 py-4 rounded-2xl bg-white text-gray-700 font-semibold text-lg shadow-lg hover:shadow-xl border border-gray-200 hover:bg-gray-50 active:bg-gray-100 transform hover:scale-105 active:scale-95 transition-all duration-150 touch-manipulation select-none"
         >
           Premium
         </Link>

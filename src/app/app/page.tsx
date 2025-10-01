@@ -110,7 +110,7 @@ export default function Dashboard() {
           </div>
           <button 
             onClick={handleLogout}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 bg-white/50 rounded-2xl border border-gray-200 hover:bg-gray-50 transition-all duration-200"
+            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 bg-white/50 rounded-2xl border border-gray-200 hover:bg-gray-50 active:bg-gray-100 active:scale-95 transition-all duration-150 touch-manipulation select-none"
           >
             Abmelden
           </button>
@@ -157,7 +157,7 @@ export default function Dashboard() {
                         : item.name;
                       setAvailable(newValue);
                     }}
-                    className="px-3 py-2 rounded-xl bg-white/70 hover:bg-white border border-gray-200 hover:border-blue-300 transition-all duration-200 text-2xl hover:scale-105"
+                    className="px-3 py-2 rounded-xl bg-white/70 hover:bg-white border border-gray-200 hover:border-blue-300 transition-all duration-150 text-2xl hover:scale-105 active:scale-95 active:bg-blue-100 touch-manipulation select-none"
                     title={item.name}
                   >
                     {item.emoji}
@@ -168,7 +168,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setAvailable('')}
-                  className="px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 hover:border-red-300 transition-all duration-200 text-lg hover:scale-105"
+                  className="px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 hover:border-red-300 transition-all duration-150 text-lg hover:scale-105 active:scale-95 active:bg-red-200 touch-manipulation select-none"
                   title="Alle Zutaten löschen"
                 >
                   🗑️
@@ -197,7 +197,7 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row gap-4">
             <button 
               onClick={genText} 
-              className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-200"
+              className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 active:scale-95 transition-all duration-150 touch-manipulation select-none"
             >
               🍲 Rezept generieren
             </button>

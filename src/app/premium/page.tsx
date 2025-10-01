@@ -51,7 +51,7 @@ export default function Premium() {
                 <div className="text-gray-600">pro Monat</div>
                 
                 <form action="/api/checkout" method="POST">
-                  <button className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold shadow-lg hover:shadow-xl hover:from-purple-600 hover:to-pink-600 transform hover:scale-105 transition-all duration-200">
+                  <button className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold shadow-lg hover:shadow-xl hover:from-purple-600 hover:to-pink-600 transform hover:scale-105 active:scale-95 transition-all duration-150 touch-manipulation select-none">
                     🚀 Jetzt upgraden
                   </button>
                 </form>
