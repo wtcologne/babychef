@@ -303,7 +303,7 @@ export default function Dashboard() {
     <main className="p-6 max-w-4xl mx-auto space-y-8">
       <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
         <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center">
+          <div className="flex-1 flex justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src="/logo.png" 
@@ -349,9 +349,7 @@ export default function Dashboard() {
                       { name: 'Apfel', emoji: '🍎' },
                       { name: 'Brokkoli', emoji: '🥦' },
                       { name: 'Tomate', emoji: '🍅' },
-                      { name: 'Banane', emoji: '🍌' },
-                      { name: 'Milch', emoji: '🥛' },
-                      { name: 'Fleisch', emoji: '🥩' }
+                      { name: 'Banane', emoji: '🍌' }
                     ].map((item) => (
                   <button
                     key={item.name}
