@@ -7,19 +7,19 @@ type ServerCookie = {
   options: CookieOptions;
 };
 
-export const supabaseServer = () => {
+export const supabaseServer = async () => {
+  const cookieStore = await cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
-          return cookies()
+          return cookieStore
             .getAll()
             .map(({ name, value }) => ({ name, value, options: {} as CookieOptions })) as ServerCookie[];
         },
         setAll(cookiesToSet) {
-          const cookieStore = cookies();
           cookiesToSet.forEach(({ name, value, options }) => {
             cookieStore.set({ name, value, ...(options ?? {}) });
           });
