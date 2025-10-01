@@ -69,13 +69,21 @@ export default function Login() {
   return (
     <main className="max-w-md mx-auto p-8 space-y-6">
       <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
-        <div className="text-center space-y-2 mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">
-            {isSignUp ? 'Account erstellen' : 'Willkommen zurück'}
-          </h1>
-          <p className="text-gray-600">
-            {isSignUp ? 'Erstelle deinen BabyChef Account' : 'Melde dich in deinem Account an'}
-          </p>
+        <div className="text-center space-y-4 mb-8">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            src="/logo.png" 
+            alt="BabyChef Logo" 
+            className="w-24 h-24 rounded-full mx-auto shadow-lg object-cover border-4 border-white"
+          />
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-gray-800">
+              {isSignUp ? 'Account erstellen' : 'Willkommen zurück'}
+            </h1>
+            <p className="text-gray-600">
+              {isSignUp ? 'Erstelle deinen BabyChef Account' : 'Melde dich in deinem Account an'}
+            </p>
+          </div>
         </div>
         
         <form onSubmit={handleAuth} className="space-y-4">

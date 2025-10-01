@@ -303,11 +303,19 @@ export default function Dashboard() {
     <main className="p-6 max-w-4xl mx-auto space-y-8">
       <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              BabyChef
-            </h1>
-            <p className="text-gray-600 mt-2">Erstelle personalisierte Rezepte für dein Baby</p>
+          <div className="flex items-center gap-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src="/logo.png" 
+              alt="BabyChef" 
+              className="w-16 h-16 rounded-full shadow-lg object-cover border-4 border-white"
+            />
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                BabyChef
+              </h1>
+              <p className="text-gray-600 mt-1 text-sm">Erstelle personalisierte Rezepte für dein Baby</p>
+            </div>
           </div>
           <button 
             onClick={handleLogout}
