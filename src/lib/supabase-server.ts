@@ -1,18 +1,21 @@
 import { cookies } from 'next/headers';
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 
 export const supabaseServer = async () => {
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: (name: string) => cookieStore.get(name)?.value,
-        set: (name: string, value: string, options: CookieOptions) =>
-          cookieStore.set({ name, value, ...options }),
-        remove: (name: string, options: CookieOptions) =>
-          cookieStore.set({ name, value: '', ...options })
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set({ name, value, ...options });
+          });
+        }
       }
     }
   );
@@ -25,11 +28,13 @@ export const supabaseAdmin = () => {
     process.env.SUPABASE_SERVICE_ROLE!,
     {
       cookies: {
-        get: () => undefined,
-        set: () => {},
-        remove: () => {}
-      },
-      headers: { get: () => undefined }
+        getAll() {
+          return [];
+        },
+        setAll() {
+          // no-op
+        }
+      }
     }
   );
 };
