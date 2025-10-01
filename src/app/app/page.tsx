@@ -450,6 +450,24 @@ export default function Dashboard() {
       </div>
       {out && (
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
+          {/* Reset Button */}
+          <div className="mb-6 flex justify-end">
+            <button
+              onClick={() => {
+                setOut(null);
+                setCurrentRecipeIndex(0);
+                setPhotoPreview(null);
+                setUploadedPhotoUrl(null);
+                setUploadedPhotoPath(null);
+                setAvailable('');
+                setAvoid('');
+              }}
+              className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white rounded-2xl border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 active:scale-95 shadow-sm hover:shadow transition-all duration-150 touch-manipulation select-none"
+            >
+              ✨ Neues Rezept
+            </button>
+          </div>
+
           {out.error ? (
             <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
               <div className="flex items-center space-x-2 text-red-700">
