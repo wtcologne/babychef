@@ -311,7 +311,7 @@ export default function Dashboard() {
           </div>
           <button 
             onClick={handleLogout}
-            className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white rounded-2xl border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 active:scale-95 shadow-sm hover:shadow transition-all duration-150 touch-manipulation select-none"
+            className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white rounded-xl border border-gray-300 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 active:scale-95 shadow-sm hover:shadow transition-all duration-150 touch-manipulation select-none"
           >
             Abmelden
           </button>
@@ -451,7 +451,7 @@ export default function Dashboard() {
       {out && (
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
           {/* Reset Button */}
-          <div className="mb-6 flex justify-end">
+          <div className="mb-6 flex justify-center">
             <button
               onClick={() => {
                 setOut(null);
@@ -462,9 +462,9 @@ export default function Dashboard() {
                 setAvailable('');
                 setAvoid('');
               }}
-              className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white rounded-2xl border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 active:scale-95 shadow-sm hover:shadow transition-all duration-150 touch-manipulation select-none"
+              className="px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl shadow-lg hover:shadow-xl hover:from-green-600 hover:to-emerald-700 active:scale-95 transition-all duration-150 touch-manipulation select-none"
             >
-              ✨ Neues Rezept
+              ✨ Neues Rezept erstellen
             </button>
           </div>
 
