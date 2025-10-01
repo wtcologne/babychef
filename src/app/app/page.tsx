@@ -12,6 +12,8 @@ export default function Dashboard() {
   const [avoid, setAvoid] = useState('');
   const [out, setOut] = useState<{ error?: string; recipe?: { title: string; ingredients: Array<{name: string; qty: number | null; unit: string | null}>; steps: string[]; allergens?: string[]; notes?: string } } | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if user is logged in
@@ -99,6 +101,94 @@ export default function Dashboard() {
         } finally {
           setIsGenerating(false);
         }
+  }
+
+  async function handlePhotoCapture() {
+    try {
+      setIsUploadingPhoto(true);
+      setOut(null);
+      
+      // Create file input for camera
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.capture = 'environment'; // Use back camera on mobile
+      
+      input.onchange = async (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+        
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = (e) => setPhotoPreview(e.target?.result as string);
+        reader.readAsDataURL(file);
+        
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setOut({ error: 'Not logged in' });
+          setIsUploadingPhoto(false);
+          return;
+        }
+        
+        // Upload to Supabase Storage
+        const fileName = `${user.id}/${Date.now()}.jpg`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('fridge-photos')
+          .upload(fileName, file);
+        
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          setOut({ error: `Upload fehlgeschlagen: ${uploadError.message}` });
+          setIsUploadingPhoto(false);
+          return;
+        }
+        
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('fridge-photos')
+          .getPublicUrl(fileName);
+        
+        console.log('Photo uploaded:', publicUrl);
+        
+        // Call vision API
+        setIsGenerating(true);
+        const res = await fetch('/api/recipes/from-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ageRange,
+            imagePublicUrl: publicUrl,
+            storagePath: fileName
+          })
+        });
+        
+        const data = await res.json();
+        console.log('Vision API response:', data);
+        
+        if (!res.ok) {
+          throw new Error(data.error || 'Foto-Analyse fehlgeschlagen');
+        }
+        
+        // Show first recipe proposal
+        if (data.proposals && data.proposals.length > 0) {
+          setOut({ recipe: data.proposals[0] });
+        } else {
+          setOut({ error: 'Keine Rezepte gefunden' });
+        }
+        
+        setIsGenerating(false);
+        setIsUploadingPhoto(false);
+      };
+      
+      input.click();
+    } catch (error: unknown) {
+      console.error('Photo capture error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setOut({ error: errorMessage });
+      setIsUploadingPhoto(false);
+      setIsGenerating(false);
+    }
   }
 
 
@@ -202,13 +292,31 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row gap-4">
             <button 
               onClick={genText}
-              disabled={isGenerating}
+              disabled={isGenerating || isUploadingPhoto}
               className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 active:scale-95 transition-all duration-150 touch-manipulation select-none disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {isGenerating ? '⏳ Lädt...' : '🍲 Rezept generieren'}
             </button>
             
+            <button 
+              onClick={handlePhotoCapture}
+              disabled={isGenerating || isUploadingPhoto}
+              className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold shadow-lg hover:shadow-xl hover:from-purple-600 hover:to-pink-600 transform hover:scale-105 active:scale-95 transition-all duration-150 touch-manipulation select-none disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              {isUploadingPhoto ? '⏳ Lädt...' : '📸 Foto aufnehmen'}
+            </button>
           </div>
+          
+          {photoPreview && (
+            <div className="mt-4">
+              <p className="text-sm font-semibold text-black mb-2">Hochgeladenes Foto:</p>
+              <img 
+                src={photoPreview} 
+                alt="Vorschau" 
+                className="w-full max-w-md rounded-2xl shadow-lg border-2 border-gray-200"
+              />
+            </div>
+          )}
         </div>
       </div>
       {out && (
